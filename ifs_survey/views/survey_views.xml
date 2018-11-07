@@ -1,0 +1,78 @@
+<odoo>
+  <data>
+  
+  
+  	  
+  
+  	<record model="ir.ui.view" id="survey_form_inherit">
+         <field name="name">survey form inherit</field>
+         <field name="model">survey.survey</field>
+         <field name="inherit_id" ref="survey.survey_form"/>
+         <field name="arch" type="xml">
+         		<xpath expr="//field[@name='quizz_mode']" position="after">
+	         		<field name="is_page_skippable"/>
+         		</xpath>
+         		<xpath expr="/form/sheet/notebook/page[2]/group" position="after">
+         			<notebook>
+         			<page string="Other Info">
+         				<group>
+	         					<field name="model_id"/>
+	         					<field name="direct_access"/>
+	         					
+	         				
+         				</group>
+         			</page>
+         		</notebook>
+         		
+         	</xpath>
+         </field>
+    </record>
+    
+    <record model="ir.ui.view" id="survey_page_form_inherit">
+         <field name="name">survey page form inherit</field>
+         <field name="model">survey.page</field>
+         <field name="inherit_id" ref="survey.survey_page_form"/>
+         <field name="arch" type="xml">
+         	<xpath expr="//field[@name='question_ids']" position="before">
+         	<group><field name="next_page_id" /></group>
+    		</xpath>
+    		
+         </field>
+    </record>
+    
+   <record model="ir.ui.view" id="survey_question_form">
+            <field name="name">ifs_processing_data_register.question form inherit </field>
+            <field name="model">survey.question</field>
+            <field name="inherit_id" ref="survey.survey_question_form"/>
+            <field name="arch" type="xml">
+            <xpath expr="/form/sheet/div[1]" position="after">
+	           
+	            	
+		              <field name="description" />
+			            
+	          
+	            </xpath>
+             <xpath expr="/form/sheet/notebook/page[1]" position="after">
+	           
+	            	<page string="Other Info">
+	            		<group>
+		                    <field name="model_id" />
+			                <field name="field_id" />
+		                </group>
+		            </page>
+	          
+	            </xpath>
+
+            
+                <xpath expr="//field[@name='labels_ids']/tree/field[@name='value']" position="after">
+	                <field name="next_page_id" />
+	               
+	                <field name="model_id" />
+			        <field name="field_id" />
+			        <field name="text" />
+	             </xpath>
+            </field>
+     </record>
+  		
+  </data>
+</odoo>
