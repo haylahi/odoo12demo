@@ -18,7 +18,7 @@
          				<group>
 	         					<field name="model_id"/>
 	         					<field name="direct_access"/>
-	         					
+	         					<field name="write_on_done"/>
 	         				
          				</group>
          			</page>
@@ -58,6 +58,8 @@
 	            		<group>
 		                    <field name="model_id" />
 			                <field name="field_id" />
+			                <field name="relation" invisible="1" />
+			                <field name="field_domain" attrs="{'invisible':[('field_id','=',False)]}" widget="domain" options="{'model': 'relation'}" />
 		                </group>
 		            </page>
 	          
