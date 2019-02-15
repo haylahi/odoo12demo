@@ -15,7 +15,7 @@ class Survey(models.Model):
     parent_id = fields.Many2one('survey.survey','Parent Survey')
     direct_access = fields.Boolean('Without password')
     model_id = fields.Many2one('ir.model')
-
+    write_on_done = fields.Boolean('Write on Done',default=False)
     
     @api.model
     def next_page(self, user_input, page_id, go_back=False):
@@ -92,8 +92,49 @@ class SurveyQuestion(models.Model):
     model_id = fields.Many2one('ir.model',related="survey_id.model_id",store=True)
     field_id = fields.Many2one('ir.model.fields', string="Field",domain="[('model_id','=',model_id)]")
     survey_id = fields.Many2one('survey.survey', related='page_id.survey_id', string='Survey',store=True)
+    field_domain = fields.Char(string='Domain', default=[])
+    relation = fields.Char(related="field_id.relation")
     
+    @api.multi
+    @api.constrains('field_id','type','field_domain')
+    def _update_labels(self):
+        for question in self:
             
+            if question.type in ['simple_choice','multiple_choice']: 
+                if bool(question.field_id) and question.field_id.ttype in ['many2one','many2many','one2many']:
+                        
+                    answer_options = self.sudo().env[question.field_id.relation].search(eval(question.field_domain))
+                    label_ids = self.env['survey.label'].search([
+                        ('question_id','=',question.id),
+                        ('model_field_res_id','in', answer_options.ids),
+                        ('model_res_name', '=', question.field_id.relation)
+                    ])
+                    
+                    model_field_res_ids = [label_id.model_field_res_id for label_id in label_ids]
+                    
+                    for option in answer_options:
+                        if option.id not in model_field_res_ids:
+                            self.env['survey.label'].create({
+                                "value" : option.name,
+                                "model_res_name" : question.field_id.relation,
+                                "model_field_res_id" : option.id,
+                                "question_id" : question.id
+                            })
+                        
+                    self.env['survey.label'].search([
+                        ('question_id','=',question.id),
+                        "|",
+                            "&",
+                                ('model_field_res_id','not in', answer_options.ids),
+                                ('model_res_name','=', question.field_id.relation),
+                        ('model_res_name','!=',question.field_id.relation)
+                    ]).unlink()
+
+                else:
+                    self.env['survey.label'].search([
+                        ('question_id','=',question.id),
+                    ]).unlink()
+    
 class SurveyLabel(models.Model):
     _inherit = 'survey.label'
     
@@ -101,8 +142,10 @@ class SurveyLabel(models.Model):
     next_page_id = fields.Many2one('survey.page','Next Page')
     code = fields.Char('Code')
     model_id = fields.Many2one('ir.model',related="survey_id.model_id",store=True)
-    field_id = fields.Many2one('ir.model.fields', string="Field",domain="[('model_id','=',model_id)]")
+    field_id = fields.Many2one('ir.model.fields', related="question_id.field_id", string="Field",domain="[('model_id','=',model_id)]", store=True)
     text = fields.Char('Text in field')
+    model_res_name = fields.Char()
+    model_field_res_id = fields.Integer()
     
 class SurveyPage(models.Model):
     _inherit = 'survey.page'   
@@ -135,13 +178,21 @@ class SurveyUserInput(models.Model):
     res_id = fields.Integer('Resource Id')
     page_sequence_ids  = fields.One2many('ifs_survey.survey_page_sequence','user_input_id','Page path')
     
-
+    @api.multi
+    def write(self,values):
+        if bool(self.survey_id.write_on_done) and bool(self.survey_id.model_id):
+            if self.state != 'done':
+                if 'state' in values and values['state']=='done':
+                    for a in self.user_input_line_ids:
+                        a._processing_data(True)
+        return super(SurveyUserInput,self).write(values)
             
     @api.multi
     def previous_page(self,page_id):
         for u in self:
             for s in u.page_sequence_ids.filtered(lambda page_sequence :page_sequence.to_page_id.id == page_id.id):
                 return s.from_page_id
+            
     @api.multi
     def register_page(self,from_page_id,to_page_id):
         to_page_id_id = to_page_id.id if bool(to_page_id) else False  
@@ -184,18 +235,14 @@ class SurveyUserInput(models.Model):
     @api.model
     def create(self, vals):
         ul = super(SurveyUserInput, self).create(vals)
-        if not bool(ul.res_id) :
-            res_id = self.sudo().env[ul.survey_id.model_id.model].create({
-                                 })
+        if not bool(ul.res_id) and bool(ul.survey_id.model_id.model):
+            res_id = self.sudo().env[ul.survey_id.model_id.model].create({})
             ul.res_id = res_id.id   
         return ul
-    
+            
 class SurveyUserInputLine(models.Model):
     _inherit = "survey.user_input_line"        
 
-    
-    
-    
     @api.multi
     def get_value(self):
         for u in self:
@@ -213,14 +260,38 @@ class SurveyUserInputLine(models.Model):
                 return value
     
     @api.constrains('value_text', 'value_number','value_date','value_free_text','value_suggested','value_suggested_row')
-    def _processing_data(self):
-        value = self.get_value()
-        if self.answer_type == 'suggestion' and bool(self.value_suggested.text):
-            value = self.value_suggested.text
-        if bool(self.question_id.model_id) and bool(self.question_id.field_id):
-            self.env[self.question_id.model_id.model].sudo().browse(self.user_input_id.res_id).write({self.question_id.field_id.name:value})
+    def _processing_data(self,manual=False):
+        if bool(survey_id.model_id):
+            if not bool(self.survey_id.write_on_done) or manual:
+                value = self.get_value()
+                if self.answer_type == 'suggestion' and bool(self.value_suggested.text):
+                    value = self.value_suggested.text
+                if self.answer_type == 'suggestion' and self.question_id.field_id.ttype == 'many2one':
+                    value = self.value_suggested.model_field_res_id
+                if bool(self.question_id.model_id) and bool(self.question_id.field_id) and self.question_id.field_id.ttype not in ['many2many','one2many']:
+                    self.env[self.question_id.model_id.model].sudo().browse(self.user_input_id.res_id).write({self.question_id.field_id.name:value})
         return
                                              
-        
-                                             
+#     @api.model
+#     def save_line_multiple_choice(self, user_input_id, question, post, answer_tag):
+#         result = super(SurveyUserInputLine, self).save_line_multiple_choice(user_input_id, question, post, answer_tag)
+#         
+#         input_line_ids = self.search([('user_input_id','=',user_input_id)])
+#         vals = None
+#         
+#         if question.field_id.ttype == 'one2many':
+#             vals = {}
+#             for input_line_id in input_line_ids:    
+#                 vals[question.field_id.relation_field] = input_line_id.value_suggested.model_field_res_id
+#         
+#         if question.field_id.ttype == 'many2many':
+#             vals = []
+#             for input_line_id in input_line_ids:
+#                 vals.append(input_line_id.value_suggested.model_field_res_id)
+#         
+#         for input_line_id in input_line_ids:
+#             label_res_id = self.env[self.value_suggested.model_res_name].browse(self.value_suggested.model_field_res_id)
+#             #update o insert
+#             
+#         return result                           
         
