@@ -183,8 +183,12 @@ class SurveyUserInput(models.Model):
         if bool(self.survey_id.write_on_done) and bool(self.survey_id.model_id):
             if self.state != 'done':
                 if 'state' in values and values['state']=='done':
+                    res = super(SurveyUserInput,self).write(values)
+                    res_id = self.sudo().env[ul.survey_id.model_id.model].create({})
+                    self.res_id = res_id.id   
                     for a in self.user_input_line_ids:
                         a._processing_data(True)
+                    return res
         return super(SurveyUserInput,self).write(values)
             
     @api.multi
@@ -235,7 +239,7 @@ class SurveyUserInput(models.Model):
     @api.model
     def create(self, vals):
         ul = super(SurveyUserInput, self).create(vals)
-        if not bool(ul.res_id) and bool(ul.survey_id.model_id.model):
+        if not bool(ul.res_id) and bool(ul.survey_id.model_id.model) and not bool(ul.survey_id.write_on_done):
             res_id = self.sudo().env[ul.survey_id.model_id.model].create({})
             ul.res_id = res_id.id   
         return ul
