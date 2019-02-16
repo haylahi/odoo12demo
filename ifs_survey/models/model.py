@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from odoo import _, tools
 from odoo import models, fields, api
+from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ class Survey(models.Model):
     direct_access = fields.Boolean('Without password')
     model_id = fields.Many2one('ir.model')
     write_on_done = fields.Boolean('Write on Done',default=False)
+    code = fields.Char('Code',help="Code to link object to survey user input : user  = user_logged, object = object of the survey,user_input = survey_user_input")
     
     @api.model
     def next_page(self, user_input, page_id, go_back=False):
@@ -179,13 +181,22 @@ class SurveyUserInput(models.Model):
     page_sequence_ids  = fields.One2many('ifs_survey.survey_page_sequence','user_input_id','Page path')
     
     @api.multi
+    def _run_code(self,object):
+        eval_context={}
+        eval_context['user']=self.env.user
+        eval_context['object']=object
+        eval_context['user_input']=self
+        safe_eval(self.survey_id.code, eval_context,nocopy=True)  # nocopy allows to return 'action'
+    
+    @api.multi
     def write(self,values):
         if bool(self.survey_id.write_on_done) and bool(self.survey_id.model_id):
             if self.state != 'done':
                 if 'state' in values and values['state']=='done':
                     res = super(SurveyUserInput,self).write(values)
-                    res_id = self.sudo().env[ul.survey_id.model_id.model].create({})
-                    self.res_id = res_id.id   
+                    res_id = self.sudo().env[self.survey_id.model_id.model].create({})
+                    self.res_id = res_id.id 
+                    self._run_code(res_id)  
                     for a in self.user_input_line_ids:
                         a._processing_data(True)
                     return res
@@ -241,7 +252,8 @@ class SurveyUserInput(models.Model):
         ul = super(SurveyUserInput, self).create(vals)
         if not bool(ul.res_id) and bool(ul.survey_id.model_id.model) and not bool(ul.survey_id.write_on_done):
             res_id = self.sudo().env[ul.survey_id.model_id.model].create({})
-            ul.res_id = res_id.id   
+            ul.res_id = res_id.id
+            self._run_code(res_id)
         return ul
             
 class SurveyUserInputLine(models.Model):
@@ -265,7 +277,7 @@ class SurveyUserInputLine(models.Model):
     
     @api.constrains('value_text', 'value_number','value_date','value_free_text','value_suggested','value_suggested_row')
     def _processing_data(self,manual=False):
-        if bool(survey_id.model_id):
+        if bool(self.survey_id.model_id):
             if not bool(self.survey_id.write_on_done) or manual:
                 value = self.get_value()
                 if self.answer_type == 'suggestion' and bool(self.value_suggested.text):
