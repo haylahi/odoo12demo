@@ -142,7 +142,8 @@ class SurveyLabel(models.Model):
     
     survey_id = fields.Many2one('survey.survey', related='question_id.survey_id', string='Survey',store=True)
     next_page_id = fields.Many2one('survey.page','Next Page')
-    code = fields.Char('Code')
+    code_start = fields.Char('Code Executed on Start')
+    code_end = fields.Char('Code Executed on End')
     model_id = fields.Many2one('ir.model',related="survey_id.model_id",store=True)
     field_id = fields.Many2one('ir.model.fields', related="question_id.field_id", string="Field",domain="[('model_id','=',model_id)]", store=True)
     text = fields.Char('Text in field')
@@ -181,12 +182,12 @@ class SurveyUserInput(models.Model):
     page_sequence_ids  = fields.One2many('ifs_survey.survey_page_sequence','user_input_id','Page path')
     
     @api.multi
-    def _run_code(self,object):
+    def _run_code(self,code,object):
         eval_context={}
         eval_context['user']=self.env.user
         eval_context['object']=object
         eval_context['user_input']=self
-        safe_eval(self.survey_id.code, eval_context,nocopy=True)  # nocopy allows to return 'action'
+        safe_eval(code, eval_context,nocopy=True)  # nocopy allows to return 'action'
     
     @api.multi
     def write(self,values):
@@ -196,9 +197,10 @@ class SurveyUserInput(models.Model):
                     res = super(SurveyUserInput,self).write(values)
                     res_id = self.sudo().env[self.survey_id.model_id.model].create({})
                     self.res_id = res_id.id 
-                    self._run_code(res_id)  
+                    self._run_code(res_id,self.survey_id.code_start)  
                     for a in self.user_input_line_ids:
                         a._processing_data(True)
+                    self._run_code(res_id,self.survey_id.code_end)
                     return res
         return super(SurveyUserInput,self).write(values)
             
@@ -253,7 +255,7 @@ class SurveyUserInput(models.Model):
         if not bool(ul.res_id) and bool(ul.survey_id.model_id.model) and not bool(ul.survey_id.write_on_done):
             res_id = self.sudo().env[ul.survey_id.model_id.model].create({})
             ul.res_id = res_id.id
-            self._run_code(res_id)
+            self._run_code(res_id,self.survey_id.code_start)
         return ul
             
 class SurveyUserInputLine(models.Model):

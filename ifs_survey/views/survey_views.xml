@@ -19,7 +19,9 @@
 	         					<field name="model_id"/>
 	         					<field name="direct_access"/>
 	         					<field name="write_on_done" attrs="{'invisible':[('model_id','=',False)]}"/>
-	         					<field name="code" widget="ace" options="{'mode': 'python'}" attrs="{'invisible':[('model_id','=',False)]}"/>
+	         					<field name="code_start" widget="ace" options="{'mode': 'python'}" attrs="{'invisible':[('model_id','=',False)]}"/>
+         						<field name="code_end" widget="ace" options="{'mode': 'python'}" attrs="{'invisible':[('model_id','=',False)]}"/>
+         						
          				</group>
          			</page>
          		</notebook>
