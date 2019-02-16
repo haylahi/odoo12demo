@@ -18,8 +18,8 @@
          				<group>
 	         					<field name="model_id"/>
 	         					<field name="direct_access"/>
-	         					<field name="write_on_done"/>
-	         				
+	         					<field name="write_on_done" attrs="{'invisible':[('model_id','=',False)]}"/>
+	         					<field name="code" widget="ace" options="{'mode': 'python'}" attrs="{'invisible':[('model_id','=',False)]}"/>
          				</group>
          			</page>
          		</notebook>
@@ -56,9 +56,10 @@
 	           
 	            	<page string="Other Info">
 	            		<group>
-		                    <field name="model_id" />
-			                <field name="field_id" />
+		                    <field name="model_id" attrs="{'invisible':[('model_id','=',False)]}"/>
+			                <field name="field_id" attrs="{'invisible':[('model_id','=',False)]}"/>
 			                <field name="relation" invisible="1" />
+			                
 			                <field name="field_domain" attrs="{'invisible':[('field_id','=',False)]}" widget="domain" options="{'model': 'relation'}" />
 		                </group>
 		            </page>
