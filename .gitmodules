@@ -1,0 +1,3 @@
+[submodule "ifs_fe"]
+	path = ifs_fe
+	url = git@bitbucket.org:infosonsdev/ifs_fe.git
