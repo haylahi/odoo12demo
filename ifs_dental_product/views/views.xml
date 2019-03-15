@@ -1,0 +1,127 @@
+<odoo>
+  <data>
+
+  	<record model="ir.ui.view" id="treatment_form_view">
+         <field name="name">treatment form</field>
+         <field name="model">ifs_dental_product.treatment</field>
+         <field name="arch" type="xml">
+         		<form>
+         			<sheet>
+         				<h1>
+         					<field name="name"/>
+         				</h1>
+         				<group>
+         					<field name="patient_id"></field>
+         					<field name="stage_id"></field>
+         					<field name="description"></field>
+         					<field name="ref"></field>
+         				</group>
+         				<div class="row">
+         				 	   <div class="col-4" >
+         				 	   	
+         				 	   </div>
+                               <div class="col-4" style="text-align:center">
+         				 	   <field name="image1" widget="image"/>
+         				 	   </div>
+         						<div class="col-4" >
+         				 	   	
+         				 	   </div>
+         				 </div>
+         				 <div class="row">
+         				 	   <div class="col-4" style="text-align:center">
+         				 	   		<field name="image2" widget="image"/>
+         				 	   </div>
+                               <div class="col-4" style="text-align:center">
+	         						<field name="stl_model" />
+         						</div>
+         						<div class="col-4" style="text-align:center">
+         				 	   		<field name="image3" widget="image"/>
+         				 	   </div>
+         				 </div>
+         				 <div class="row">
+         				 	   <div class="col-4">
+         				 	   	
+         				 	   </div>
+                               <div class="col-4" style="text-align:center">
+         				 	   <field name="image4" widget="image"/>
+         				 	   </div>
+         						<div class="col-4">
+         				 	   	
+         				 	   </div>
+         				 </div>
+         			</sheet>
+         			<div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
+                </div>
+         		</form>
+         </field>
+    </record>
+    
+    
+    
+    <record model="ir.ui.view" id="treatment_tree_view">
+         <field name="name">treatment tree</field>
+         <field name="model">ifs_dental_product.treatment</field>
+         
+         <field name="arch" type="xml">
+         	<tree>
+	         	<field name="name"/>
+         	</tree>
+    		
+         </field>
+    </record>
+    
+   		<record model="ir.actions.act_window"
+			id="treatment_action">
+			<field name="name">Treatments</field>
+			<field name="res_model">ifs_dental_product.treatment</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+		
+	<record model="ir.ui.view" id="patient_form_view">
+         <field name="name">patient form</field>
+         <field name="model">ifs_dental_product.patient</field>
+         
+         <field name="arch" type="xml">
+         	<form>
+	         	<field name="name"/>
+         	</form>
+    		
+         </field>
+    </record>
+    <record model="ir.ui.view" id="patient_tree_view">
+         <field name="name">patient tree</field>
+         <field name="model">ifs_dental_product.patient</field>
+         
+         <field name="arch" type="xml">
+         	<tree>
+	         	<field name="name"/>
+         	</tree>
+    		
+         </field>
+    </record>	
+    
+    <record model="ir.actions.act_window"
+			id="patient_action">
+			<field name="name">Patients</field>
+			<field name="res_model">ifs_dental_product.patient</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+	</record>
+		<menuitem name="Wilocs"
+			id="ifs_dental_product.menu_root"
+			web_icon="ifs_dental_product,static/description/logo.png" />
+			
+		<menuitem name="Treatments"
+			id="ifs_dental_product.menu_treatment"
+			parent="ifs_dental_product.menu_root"
+			action="ifs_dental_product.treatment_action" sequence="4" />
+			
+		<menuitem name="Patients"
+			id="ifs_dental_product.menu_patients"
+			parent="ifs_dental_product.menu_root"
+			action="ifs_dental_product.patient_action" sequence="5" />
+  </data>
+</odoo>

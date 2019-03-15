@@ -10,7 +10,7 @@
     'support': 'info@infosons.com',
     'category': 'Document Management',
     'version': '0.1',
-    'depends': [ 'web'],
+    'depends': [ 'web','portal'],
     'data': [
         'views/webclient_templates.xml',
     ],

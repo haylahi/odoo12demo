@@ -8,5 +8,14 @@
             	<script type="text/javascript" src="/ifs_stl_viewer/static/src/js/odoo_stl_viewer.js"/>
             </xpath>
         </template>
+        
+      <template id="assets_frontend" inherit_id="website.assets_frontend" name="Stl Assets">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/ifs_stl_viewer/static/src/js/xeogl.js"/>
+            <script type="text/javascript" src="/ifs_stl_viewer/static/src/js/STLModel.js"/>
+                        	<script type="text/javascript" src="/ifs_stl_viewer/static/src/js/website_stl_viewer.js"/>
+            
+        </xpath>
+    </template> 
     </data>
 </odoo>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="0">
+    <template id="portal_my_home_menu_treatment" name="Portal layout : treatments menu entries" inherit_id="portal.portal_breadcrumbs" priority="50">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'treatment' or treatment" t-attf-class="breadcrumb-item #{'active ' if not treatment else ''}">
+                <a t-if="treatment" t-attf-href="/my/treatments?{{ keep_query() }}">Treatments</a>
+                <t t-else="">Treatments</t>
+            </li>
+            <li t-if="treatment" class="breadcrumb-item active">
+                #<span t-field="treatment.id"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_treatments_treatment" name="Portal My Home : Treatments" inherit_id="portal.portal_my_home" priority="50">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-if="treatment_count" t-call="portal.portal_docs_entry">
+                <t t-set="title">Treatments</t>
+                <t t-set="url" t-value="'/my/treatments'"/>
+                <t t-set="count" t-value="treatment_count"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_treatments_treatment" name="Treatments treatment">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Treatments</t>
+            </t>
+            <div t-if="not treatments" class="alert alert-info">
+                There are currently no Treatments for your account.
+            </div>
+            <t t-if="treatments" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th class="text-right">Ref</th>
+                        <th class="w-100">Description</th><th/>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <t t-foreach="treatments" t-as="treatment">
+                    <tr>
+                        <td class="text-right"><a t-attf-href="/treatments/treatment/#{treatment.id}"><small>#</small><t t-esc="treatment.id"/></a></td>
+                        <td><a t-attf-href="/treatments/treatment/#{treatment.id}"><span t-field="treatment.name"/></a></td><td/>
+                        <td class="text-center"><span class="badge badge-pill badge-info" t-field="treatment.stage_id.name"/></td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="treatments_followup" name="Treatment">
+        <t t-call="portal.portal_layout">
+            <t t-set="wrapwrap_classes" t-value="'o_portal_bg_dark'"/>
+
+            
+
+            <t t-call="portal.portal_record_layout">
+                <t t-set="card_header">
+                    <div class="row no-gutters">
+                        <div class="col-md">
+                            <h5 class="mb-1 mb-md-0">
+                                <span t-field="treatment.name"/>
+                                <small class="text-muted"> (#<span t-field="treatment.id"/>)</small>
+                            </h5>
+                        </div>
+                        <div class="col-md text-md-right">
+                            <small class="text-right">Status:</small>
+                            <span t-field="treatment.stage_id.name" class=" badge badge-pill badge-info" title="Current stage"/>
+                        </div>
+                    </div>
+                </t>
+                <t t-set="card_body">
+                    <div class="row mb-4">
+                        <strong class="col-lg-2">Reported on</strong>
+                        <span class="col-lg-10" t-field="treatment.create_date" t-options='{"widget": "date"}'/>
+                    </div>
+                    <div class="row mb-4">
+                    	<div class="col-lg-4">
+                    		
+                    	</div>
+                    	<div class="col-lg-4 ">
+                    		<p t-field="treatment.image1" t-options="{'widget': 'image','class':'rounded mx-auto d-block'}"/>
+                    	</div>
+                    	<div class="col-lg-4">
+                    		
+                    	</div>
+                    </div>
+                    <div class="row mb-4">
+                    	<div class="col-lg-4 " >
+                    		<p t-field="treatment.image2" t-options="{'widget': 'image'}"/>
+                    	</div>
+                        <div t-if="treatment.stl_model" class="col-lg-4 align-middle">
+                        <span
+                              class="oe_stl_viewer"
+                              t-att-data-document-id="treatment.stl_model.id"
+                        >
+                        <button class="btn">Show Model</button>
+                                            
+                          </span>
+                        </div>
+                        <div class="col-lg-4 align-middle">
+                    		<p t-field="treatment.image3" t-options="{'widget': 'image','class':'rounded mx-auto d-block'}"/>
+                    	</div>
+                    </div>
+                     <div class="row mb-4">
+                    	<div class="col-lg-4">
+                    		
+                    	</div>
+                    	<div class="col-lg-4">
+                    		<p t-field="treatment.image4" t-options="{'widget': 'image'}"/>
+                    	</div>
+                    	<div class="col-lg-4">
+                    		
+                    	</div>
+                    </div>
+                    <div class="row mb-4">
+                        <strong class="col-lg-2">Description</strong>
+                        <div t-if="treatment.description" class="col-lg-10" t-field="treatment.description"/>
+                        <div t-else="" class="col-lg-10">
+                            <em class="text-muted"><small>No description</small></em>
+                        </div>
+                    </div>
+                </t>
+            </t>
+
+            <div class="o_portal_messages_container mt32">
+                <h4>Message and communication history</h4>
+                <t t-call="portal.message_thread">
+                    <t t-set="token" t-value="treatment.access_token"/>
+                    <t t-set="object" t-value="treatment"/>
+                    <t t-set="pid" t-value="pid"/>
+                    <t t-set="hash" t-value="hash"/>
+                    <t t-set="disable_composer" t-value="treatment.stage_id.is_close"/>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    
+</data>
+</odoo>
