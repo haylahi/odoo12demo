@@ -1,0 +1,10 @@
+<odoo>
+ <!-- <template id="form_submit" inherit_id="homepage-dental" active="True" customize_show="True" name="Filter by Countries">
+	    <xpath expr="//div[@id='wrap']" position="inside">
+	       <t t-set="description">
+                Setup your company's data for reports headers.
+            </t>
+	    </xpath>
+   
+	</template>  -->
+</odoo>

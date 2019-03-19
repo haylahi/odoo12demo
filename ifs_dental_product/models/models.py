@@ -18,6 +18,19 @@ class Patient(models.Model):
     name = fields.Char('Name')
     date_of_birth = fields.Date('Date of Birth')
     
+    @api.model_cr_context
+    def _auto_init(self):
+        res = super(Patient,self)._auto_init()
+        self.website_writable()
+        return res
+    
+    @api.model
+    def website_writable(self):
+        model = self.env['ir.model'].sudo().search([('model', '=', 'ifs_dental_product.patient')])
+        model.website_form_access = True
+        self.env['ir.model.fields'].sudo().formbuilder_whitelist('ifs_dental_product.patient',['name','date_of_birth'])
+        
+        
 class Trattamento(models.Model):
     _name = 'ifs_dental_product.treatment'
     _inherit = ['mail.thread','portal.mixin']
@@ -35,6 +48,7 @@ class Trattamento(models.Model):
     name = fields.Char('Name')
     description = fields.Text('Description')
     ref= fields.Char('Ref')
+    product_id = fields.Many2one('product.product','Prodotto')
     
 class Stage(models.Model):
     _name = 'ifs_dental_product.stage'

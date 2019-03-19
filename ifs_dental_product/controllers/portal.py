@@ -7,9 +7,10 @@ from odoo.http import request
 from odoo.tools.translate import _
 from odoo.addons.portal.controllers.portal import pager as portal_pager, CustomerPortal
 from odoo.osv.expression import OR
+from odoo.addons.website_form.controllers.main import WebsiteForm
+from odoo.exceptions import ValidationError
 
-
-class CustomerPortal(CustomerPortal):
+class CustomerPortal(WebsiteForm):
 
     def _prepare_portal_layout_values(self):
         values = super(CustomerPortal, self)._prepare_portal_layout_values()
@@ -103,3 +104,63 @@ class CustomerPortal(CustomerPortal):
 
         values = self._treatment_get_page_view_values(treatment_sudo, access_token, **kw)
         return request.render("ifs_dental_product.treatments_followup", values)
+    
+    
+    @http.route(['/treatment/patient-data/<int:treatment_id>','/treatment/patient-data'], type='http', auth="public",method="post", website=True)
+    def treatment_patient_data(self, treatment_id=None, **kw):
+        model_record = request.env['ir.model'].sudo().search([('model', '=', 'ifs_dental_product.patient')])
+        try:
+            data = self.extract_data(model_record, request.params)
+        # If we encounter an issue while extracting data
+        except ValidationError as e:
+            # I couldn't find a cleaner way to pass data to an exception
+            return json.dumps({'error_fields' : e.args[0]})
+        try:
+            id_record = self.insert_record(request, model_record, data['record'], data['custom'], data.get('meta'))
+            if id_record:
+                self.insert_attachment(model_record, id_record, data['attachments'])
+
+        # Some fields have additional SQL constraints that we can't check generically
+        # Ex: crm.lead.probability which is a float between 0 and 1
+        # TODO: How to get the name of the erroneous field ?
+        except IntegrityError:
+            return json.dumps(False)
+        products = [(product_id.id,product_id.display_name) for product_id in request.env['product.product'].search([(True,'=',True)])]
+        select_options = {
+            'product_id': products
+        }
+        return request.render("ifs_dental_product.treatment_data", {'patient_id':id_record,'select_options':select_options})
+
+    
+    @http.route(['/treatment/treatment-data/<int:treatment_id>','/treatment/treatment-data'], type='http', auth="public",method="post", website=True)
+    def treatment_treatment_data(self, treatment_id=None, **kw):
+        model_record = request.env['ir.model'].sudo().search([('model', '=', 'ifs_dental_product.treatment')])
+        try:
+            data = self.extract_data(model_record, request.params)
+        # If we encounter an issue while extracting data
+        except ValidationError as e:
+            # I couldn't find a cleaner way to pass data to an exception
+            return json.dumps({'error_fields' : e.args[0]})
+        try:
+            id_record = self.insert_record(request, model_record, data['record'], data['custom'], data.get('meta'))
+            if id_record:
+                self.insert_attachment(model_record, id_record, data['attachments'])
+
+        # Some fields have additional SQL constraints that we can't check generically
+        # Ex: crm.lead.probability which is a float between 0 and 1
+        # TODO: How to get the name of the erroneous field ?
+        except IntegrityError:
+            return json.dumps(False)
+        
+        return request.render("ifs_dental_product.treatment_data", patient_id=id_record)
+        
+    @http.route('''/treatments/submit''', type='http', auth="public", website=True)
+    def website_treatment_form(self, **kwargs):
+        default_values = {}
+#         if request.env.user.partner_id != request.env.ref('base.public_partner'):
+#             default_values['name'] = request.env.user.partner_id.name
+#             default_values['email'] = request.env.user.partner_id.email
+        return request.render("ifs_dental_product.treatment_submit", { 'default_values': default_values})
+
+
+    

@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 <data noupdate="0">
+
+	<template id="assets_frontend" inherit_id="website.assets_frontend" name="Dental Assets">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/ifs_dental_product/static/src/js/treatment.js"/>
+           
+            
+        </xpath>
+    </template> 
+    
     <template id="portal_my_home_menu_treatment" name="Portal layout : treatments menu entries" inherit_id="portal.portal_breadcrumbs" priority="50">
         <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
             <li t-if="page_name == 'treatment' or treatment" t-attf-class="breadcrumb-item #{'active ' if not treatment else ''}">
@@ -37,7 +46,7 @@
                 <thead>
                     <tr>
                         <th class="text-right">Ref</th>
-                        <th class="w-100">Description</th><th/>
+                        <th class="w-100">Name</th><th/>
                         <th class="text-center">Status</th>
                     </tr>
                 </thead>
@@ -139,7 +148,175 @@
             </div>
         </t>
     </template>
-
+	
+	
+	<template id="ifs_dental_product.treatment_submit" name="Submit a Treatment">
+        <t name="TreatmentSubmit" priority="29" t-name="ifs_dental_product.treatment">
+            <t t-call="website.layout">
+                <t t-set="additional_title">Treatment</t>
+                
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row">
+                            <section id="forms">
+                            	 <t t-call="ifs_dental_product.treatment_submit_state">
+		                            <t t-set="step" t-value="10"/>
+		                        </t>
+                                <form action="/treatment/patient-data/" class="s_website_form" method="post"  enctype="multipart/form-data">
+                                   
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="name">Cognome e Nome</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="text" class="form-control o_website_form_input" name="name" t-value="name" required="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="date_of_birth">Data di nascita</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                        	<div class='input-group date'>
+                                            <input  type="text" date="true" class="form-control form-control date o_website_form_input o_website_form_date" name="date_of_birth" t-value="date_of_birth" required="1"/>
+                                       		</div>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="form-group row form-field">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="image1">Image1</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="file" name="image1" class="form-control o_website_form_input" multiple="true" accept="image/*,application/pdf,video/*"/>
+                                        </div>
+                                    </div> -->
+                                    <div class="form-group row">
+                                        <div class="offset-lg-3 offset-md-4 col-md-8 col-lg-7">
+                                            <button type="submit" class="btn btn-primary btn-lg o_website_form_send o_default_snippet_text">Successivo</button>
+                                            <span id="o_website_form_result"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
     
+    <template id="select_input">
+            
+            <t t-set="value" t-value="value if value else (treatment.get(name) if treatment else False)"/>
+            
+            <t t-set="options" t-value="select_options.get(name)"/>
+            <t t-set="disabled" t-value="0"/>
+            <div t-attf-class="form-group #{error_field} col-lg-6">
+                
+                <select t-att-name="name" class="form-control" autocomplete="off" t-att-disabled="disabled">
+                	<option t-att-selected="'selected'" disabled="True" value="select"> -- select an option -- </option>
+                    <t t-foreach="options or []" t-as="option">
+                        <option t-att-value="option[0]" t-att-selected="'selected' if option[0] == value else 0">
+                            <t t-esc="option[1]"/>
+                        </option>
+                    </t>
+                </select>
+                <t t-if="disabled == 1">
+                	<t t-foreach="options or []" t-as="option">
+                        <t t-if="option[0] == value">
+                        	<input type="hidden" t-att-name="name" t-att-value="value"/>
+                        </t>
+                    </t>
+                </t>                
+            </div>
+        </template>
+        
+        <template id="many2one_input">
+            <t t-call="ifs_dental_product.select_input">
+                
+                
+            </t>
+        </template>
+        
+    <template id="ifs_dental_product.treatment_data" name="Submit a Treatment">
+        <t name="TreatmentData" priority="29" t-name="ifs_dental_product.treatment_data">
+            <t t-call="website.layout">
+                <t t-set="additional_title">Treatment</t>
+                
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row">
+                            <section id="forms">
+                            	 <t t-call="ifs_dental_product.treatment_submit_state">
+		                            <t t-set="step" t-value="20"/>
+		                        </t>
+                                <form action="/treatment/treatment-data/" method="post" class="s_website_form" enctype="multipart/form-data"  >
+                                   
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="patient_id" t-att-value="patient_id"/>
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="name">Prodotto</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <t t-call="ifs_dental_product.many2one_input">
+                                                <t t-set="name" t-value="'product_id'"/>
+                                                
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="name">Descrizione</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="text" class="form-control o_website_form_input" name="description" t-value="'description'" required="1"/>
+                                        </div>
+                                    </div>
+                                    
+                                   
+                                    <div class="form-group row">
+                                        <div class="offset-lg-3 offset-md-4 col-md-8 col-lg-7">
+                                            <button type="submit" class="btn btn-primary btn-lg o_website_form_send o_default_snippet_text">Successivo</button>
+                                            <span id="o_website_form_result"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <template id="treatment_submit_state" name="Treatment states">
+            <h1 class="page-title margin-top-clear">Treatment</h1>
+            <nav aria-label="breadcrumb">
+            	 <ol class="breadcrumb">
+                <li t-att-class="(step==10 and 'text-primary' or 'text-muted') + ' breadcrumb-item'"  id="step10" >
+                       	Dati paziente
+                </li>
+                <li t-att-class="(step==20 and 'text-primary') or 'text-muted' + ' breadcrumb-item'"  id="step20" >
+                        Dati Trattamento
+                </li>
+                <li t-att-class="(step==40 and 'text-primary') or 'text-muted' + ' breadcrumb-item'" id="step40" >
+                    	Foto
+                </li>
+                <li t-att-class="(step==50 and 'text-primary') or 'text-muted' + ' breadcrumb-item'" id="step50" >
+                    	Altre informazioni
+                </li>
+            </ol>
+            </nav>
+        </template>
+    
+   
+    
+    
+	
+	
+	
 </data>
+	
 </odoo>

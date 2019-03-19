@@ -110,6 +110,9 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 	</record>
+	
+	
+        
 		<menuitem name="Wilocs"
 			id="ifs_dental_product.menu_root"
 			web_icon="ifs_dental_product,static/description/logo.png" />

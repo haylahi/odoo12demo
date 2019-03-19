@@ -12,11 +12,12 @@
 
     'author': "Infosons",
     'website': "http://www.infosons.com",
-    'depends': ['mail','ifs_stl_viewer','portal'],
+    'depends': ['mail','ifs_stl_viewer','portal','website_form'],
     'data': [
-             'security/ir.model.access.csv',
+            'security/ir.model.access.csv',
             'views/views.xml',
             'views/dental_portal_templates.xml',
-            
+            'views/inherited_templates.xml',
         ],
+    
 }
