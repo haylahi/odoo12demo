@@ -20,24 +20,24 @@ $( document ).ready(function (name) {
     // frontend does not load moment locale at all.
     // so wait until DOM ready with locale then init datetimepicker
     
-//    $('.form-control.date').datetimepicker({
-//            format : time.getLangDateFormat(),
-//            minDate: moment({ y: 1900 }),
-//            maxDate: moment().add(200, "y"),
-//            calendarWeeks: true,
-//            icons: {
-//                time: 'fa fa-clock-o',
-//                date: 'fa fa-calendar',
-//                next: 'fa fa-chevron-right',
-//                previous: 'fa fa-chevron-left',
-//                up: 'fa fa-chevron-up',
-//                down: 'fa fa-chevron-down',
-//            },
-//            locale : moment.locale(),
-//            allowInputToggle: true,
-//            keyBinds: null,
-//        });
-//   
+    $('.form-control.date').datetimepicker({
+            format : time.getLangDateFormat(),
+            minDate: moment({ y: 1900 }),
+            maxDate: moment().add(200, "y"),
+            calendarWeeks: true,
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                next: 'fa fa-chevron-right',
+                previous: 'fa fa-chevron-left',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+            },
+            locale : moment.locale(),
+            allowInputToggle: true,
+            keyBinds: null,
+        });
+   
                 
                 
 });
