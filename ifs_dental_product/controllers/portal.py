@@ -10,7 +10,7 @@ from odoo.osv.expression import OR
 from odoo.addons.website_form.controllers.main import WebsiteForm
 from odoo.exceptions import ValidationError
 
-class CustomerPortal(WebsiteForm):
+class CustomerPortal(WebsiteForm,CustomerPortal):
 
     def _prepare_portal_layout_values(self):
         values = super(CustomerPortal, self)._prepare_portal_layout_values()
@@ -151,9 +151,33 @@ class CustomerPortal(WebsiteForm):
         # TODO: How to get the name of the erroneous field ?
         except IntegrityError:
             return json.dumps(False)
-        
-        return request.render("ifs_dental_product.treatment_data", patient_id=id_record)
-        
+        return request.render("ifs_dental_product.treatment_photo", {'treatment_id':id_record})
+    
+    
+    
+    @http.route(['/treatment/treatment-photo/<int:treatment_id>','/treatment/treatment-photo'], type='http', auth="public",method="post", website=True)
+    def treatment_treatment_photo(self, treatment_id=None, **kw):
+        model_record = request.env['ir.model'].sudo().search([('model', '=', 'ifs_dental_product.treatment')])
+        treatment_id = request.params.pop('treatment_id')
+        try:
+            data = self.extract_data(model_record, request.params)
+        # If we encounter an issue while extracting data
+        except ValidationError as e:
+            # I couldn't find a cleaner way to pass data to an exception
+            return json.dumps({'error_fields' : e.args[0]})
+        try:
+            id_record = self.update_record(request, model_record,treatment_id, data['record'], data['custom'], data.get('meta'))
+            if id_record:
+                self.insert_attachment(model_record, id_record, data['attachments'])
+
+        # Some fields have additional SQL constraints that we can't check generically
+        # Ex: crm.lead.probability which is a float between 0 and 1
+        # TODO: How to get the name of the erroneous field ?
+        except IntegrityError:
+            return json.dumps(False)
+        return request.redirect("/treatments/treatment/"+str(id_record))
+    
+    
     @http.route('''/treatments/submit''', type='http', auth="public", website=True)
     def website_treatment_form(self, **kwargs):
         default_values = {}
@@ -163,4 +187,31 @@ class CustomerPortal(WebsiteForm):
         return request.render("ifs_dental_product.treatment_submit", { 'default_values': default_values})
 
 
-    
+    def update_record(self, request, model, res_id, values, custom, meta=None):
+        model_name = model.sudo().model
+        record = request.env[model_name].sudo().with_context(mail_create_nosubscribe=True).browse(int(res_id))
+        record.write(values)
+        if custom or meta:
+            default_field = model.website_form_default_field_id
+            default_field_data = values.get(default_field.name, '')
+            custom_content = (default_field_data + "\n\n" if default_field_data else '') \
+                           + (self._custom_label + custom + "\n\n" if custom else '') \
+                           + (self._meta_label + meta if meta else '')
+
+            # If there is a default field configured for this model, use it.
+            # If there isn't, put the custom data in a message instead
+            if default_field.name:
+                if default_field.ttype == 'html' or model_name == 'mail.mail':
+                    custom_content = nl2br(custom_content)
+                record.update({default_field.name: custom_content})
+            else:
+                values = {
+                    'body': nl2br(custom_content),
+                    'model': model_name,
+                    'message_type': 'comment',
+                    'no_auto_thread': False,
+                    'res_id': record.id,
+                }
+                mail_id = request.env['mail.message'].sudo().create(values)
+
+        return record.id

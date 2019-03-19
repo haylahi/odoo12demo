@@ -8,6 +8,10 @@
            
             
         </xpath>
+        <xpath expr="link[last()]" position="after">
+        	                       <link rel="stylesheet" type="text/scss" href="/ifs_dental_product/static/src/scss/style.scss"/>
+        	
+        </xpath>
     </template> 
     
     <template id="portal_my_home_menu_treatment" name="Portal layout : treatments menu entries" inherit_id="portal.portal_breadcrumbs" priority="50">
@@ -162,7 +166,7 @@
                             	 <t t-call="ifs_dental_product.treatment_submit_state">
 		                            <t t-set="step" t-value="10"/>
 		                        </t>
-                                <form action="/treatment/patient-data/" class="s_website_form" method="post"  enctype="multipart/form-data">
+                                <form action="/treatment/patient-data/"  method="post"  enctype="multipart/form-data">
                                    
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                     <div class="form-group row form-field o_website_form_required">
@@ -178,19 +182,17 @@
                                             <label class="col-form-label" for="date_of_birth">Data di nascita</label>
                                         </div>
                                         <div class="col-lg-7 col-md-8">
-                                        	<div class='input-group date'>
-                                            <input  type="text" date="true" class="form-control form-control date o_website_form_input o_website_form_date" name="date_of_birth" t-value="date_of_birth" required="1"/>
+                                        	<div class="input-group date" id="datetimepicker_1" data-target-input="nearest">
+                                            <input  type="text" date="true" class="form-control datetimepicker-input" name="date_of_birth" t-value="date_of_birth" data-target="#datetimepicker_1" required="1"/>
+                                       		<div class="input-group-append" data-target="#datetimepicker_1" data-toggle="datetimepicker">
+							                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+							                </div>
                                        		</div>
+                                       		
+                                       		
                                         </div>
                                     </div>
-                                    <!-- <div class="form-group row form-field">
-                                        <div class="col-lg-3 col-md-4 text-right">
-                                            <label class="col-form-label" for="image1">Image1</label>
-                                        </div>
-                                        <div class="col-lg-7 col-md-8">
-                                            <input type="file" name="image1" class="form-control o_website_form_input" multiple="true" accept="image/*,application/pdf,video/*"/>
-                                        </div>
-                                    </div> -->
+                                    
                                     <div class="form-group row">
                                         <div class="offset-lg-3 offset-md-4 col-md-8 col-lg-7">
                                             <button type="submit" class="btn btn-primary btn-lg o_website_form_send o_default_snippet_text">Successivo</button>
@@ -212,7 +214,7 @@
             
             <t t-set="options" t-value="select_options.get(name)"/>
             <t t-set="disabled" t-value="0"/>
-            <div t-attf-class="form-group #{error_field} col-lg-6">
+            <div t-attf-class="form-group #{error_field}">
                 
                 <select t-att-name="name" class="form-control" autocomplete="off" t-att-disabled="disabled">
                 	<option t-att-selected="'selected'" disabled="True" value="select"> -- select an option -- </option>
@@ -251,7 +253,7 @@
                             	 <t t-call="ifs_dental_product.treatment_submit_state">
 		                            <t t-set="step" t-value="20"/>
 		                        </t>
-                                <form action="/treatment/treatment-data/" method="post" class="s_website_form" enctype="multipart/form-data"  >
+                                <form action="/treatment/treatment-data/" method="post"  enctype="multipart/form-data"  >
                                    
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                     <input type="hidden" name="patient_id" t-att-value="patient_id"/>
@@ -271,9 +273,55 @@
                                             <label class="col-form-label" for="name">Descrizione</label>
                                         </div>
                                         <div class="col-lg-7 col-md-8">
-                                            <input type="text" class="form-control o_website_form_input" name="description" t-value="'description'" required="1"/>
+                                            <textarea required="1" name="description"  class="form-control o_website_form_input">
+                                            	<t t-esc="description"/>
+                                            </textarea>
                                         </div>
                                     </div>
+                                    
+                                   
+                                    <div class="form-group row">
+                                        <div class="offset-lg-3 offset-md-4 col-md-8 col-lg-7">
+                                            <button type="submit" class="btn btn-primary btn-lg o_website_form_send o_default_snippet_text">Successivo</button>
+                                            <span id="o_website_form_result"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <template id="ifs_dental_product.treatment_photo" name="Submit a Treatment">
+        <t name="TreatmentData" priority="29" t-name="ifs_dental_product.treatment_data">
+            <t t-call="website.layout">
+                <t t-set="additional_title">Treatment</t>
+                
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row">
+                            <section id="forms">
+                            	 <t t-call="ifs_dental_product.treatment_submit_state">
+		                            <t t-set="step" t-value="30"/>
+		                        </t>
+                                <form action="/treatment/treatment-photo/" method="post"  enctype="multipart/form-data"  >
+                                   
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="treatment_id" t-att-value="treatment_id"/>
+                                     <div class="form-group row form-field">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="image1">Image1</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="file" name="image1" id="image1" data-target="output1" onchange="loadFile(event)" class="form-control inputfile" accept="image/*" />
+                                        		<img onclick="uploadeFile('image1');" id="output1" class="img-thumbnail" src="data:image/png;base64,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" />
+                                        		  
+                                        		
+                                        </div>
+                                    </div> 
                                     
                                    
                                     <div class="form-group row">
@@ -298,15 +346,13 @@
                 <li t-att-class="(step==10 and 'text-primary' or 'text-muted') + ' breadcrumb-item'"  id="step10" >
                        	Dati paziente
                 </li>
-                <li t-att-class="(step==20 and 'text-primary') or 'text-muted' + ' breadcrumb-item'"  id="step20" >
+                <li t-att-class="(step==20 and 'text-primary' or 'text-muted') + ' breadcrumb-item'"  id="step20" >
                         Dati Trattamento
                 </li>
-                <li t-att-class="(step==40 and 'text-primary') or 'text-muted' + ' breadcrumb-item'" id="step40" >
+                <li t-att-class="(step==30 and 'text-primary' or 'text-muted') + ' breadcrumb-item'" id="step40" >
                     	Foto
                 </li>
-                <li t-att-class="(step==50 and 'text-primary') or 'text-muted' + ' breadcrumb-item'" id="step50" >
-                    	Altre informazioni
-                </li>
+                
             </ol>
             </nav>
         </template>

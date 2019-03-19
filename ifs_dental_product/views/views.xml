@@ -87,6 +87,7 @@
          <field name="arch" type="xml">
          	<form>
 	         	<field name="name"/>
+	         	<field name="date_of_birth"/>
          	</form>
     		
          </field>

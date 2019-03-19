@@ -45,11 +45,19 @@ class Trattamento(models.Model):
     image2 = fields.Binary('Image1')
     image3 = fields.Binary('Image1')
     image4 = fields.Binary('Image1')
-    name = fields.Char('Name')
+    name = fields.Char('Name',related="patient_id.name",readonly=True)
     description = fields.Text('Description')
     ref= fields.Char('Ref')
     product_id = fields.Many2one('product.product','Prodotto')
     
+    
+    @api.model
+    def website_writable(self):
+        model = self.env['ir.model'].sudo().search([('model', '=', 'ifs_dental_product.treatment')])
+        model.website_form_access = True
+        self.env['ir.model.fields'].sudo().formbuilder_whitelist('ifs_dental_product.treatment',['patient_id','description','product_id','image1','image2','image3','image4'])
+        
+        
 class Stage(models.Model):
     _name = 'ifs_dental_product.stage'
     _description = 'Treatment Stage'
