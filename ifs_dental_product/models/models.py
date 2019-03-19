@@ -18,11 +18,11 @@ class Patient(models.Model):
     name = fields.Char('Name')
     date_of_birth = fields.Date('Date of Birth')
     
-    @api.model_cr_context
-    def _auto_init(self):
-        res = super(Patient,self)._auto_init()
-        self.website_writable()
-        return res
+#     @api.model_cr_context
+#     def _auto_init(self):
+#         res = super(Patient,self)._auto_init()
+#         self.website_writable()
+#         return res
     
     @api.model
     def website_writable(self):
