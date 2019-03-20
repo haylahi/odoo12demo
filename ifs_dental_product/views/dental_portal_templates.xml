@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="0">
+
+	<template id="assets_frontend" inherit_id="website.assets_frontend" name="Dental Assets">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/ifs_dental_product/static/src/js/treatment.js"/>
+           
+            
+        </xpath>
+        <xpath expr="link[last()]" position="after">
+        	                       <link rel="stylesheet" type="text/scss" href="/ifs_dental_product/static/src/scss/style.scss"/>
+        	
+        </xpath>
+    </template> 
+    
+    <template id="portal_my_home_menu_treatment" name="Portal layout : treatments menu entries" inherit_id="portal.portal_breadcrumbs" priority="50">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'treatment' or treatment" t-attf-class="breadcrumb-item #{'active ' if not treatment else ''}">
+                <a t-if="treatment" t-attf-href="/my/treatments?{{ keep_query() }}">Trattamenti</a>
+                <t t-else="">Trattamenti</t>
+            </li>
+            <li t-if="treatment" class="breadcrumb-item active">
+                #<span t-field="treatment.id"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_treatments_treatment" name="Portal My Home : Trattamenti" inherit_id="portal.portal_my_home" priority="50">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-if="treatment_count" t-call="portal.portal_docs_entry">
+                <t t-set="title">Trattamenti</t>
+                <t t-set="url" t-value="'/my/treatments'"/>
+                <t t-set="count" t-value="treatment_count"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_treatments_treatment" name="Trattamenti treatment">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Trattamenti</t>
+            </t>
+            <div t-if="not treatments" class="alert alert-info">
+                Non ci sono Trattamenti. .
+            </div>
+            <t t-if="treatments" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th class="text-right">Ref</th>
+                        <th class="w-100">Name</th><th/>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <t t-foreach="treatments" t-as="treatment">
+                    <tr>
+                        <td class="text-right"><a t-attf-href="/treatments/treatment/#{treatment.id}"><small>#</small><t t-esc="treatment.id"/></a></td>
+                        <td><a t-attf-href="/treatments/treatment/#{treatment.id}"><span t-field="treatment.name"/></a></td><td/>
+                        <td class="text-center"><span class="badge badge-pill badge-info" t-field="treatment.stage_id.name"/></td>
+                    </tr>
+                </t>
+            </t>
+            <a class="btn btn-primary" href="/treatments/submit" role="button">Crea un nuovo trattamento</a>
+        </t>
+        
+        
+    </template>
+
+    <template id="treatments_followup" name="Trattamento">
+        <t t-call="portal.portal_layout">
+            <t t-set="wrapwrap_classes" t-value="'o_portal_bg_dark'"/>
+
+            
+
+            <t t-call="portal.portal_record_layout">
+                <t t-set="card_header">
+                    <div class="row no-gutters">
+                        <div class="col-md">
+                            <h5 class="mb-1 mb-md-0">
+                                <span t-field="treatment.name"/>
+                                <small class="text-muted"> (#<span t-field="treatment.id"/>)</small>
+                            </h5>
+                        </div>
+                        <div class="col-md text-md-right">
+                            <small class="text-right">Stato:</small>
+                            <span t-field="treatment.stage_id.name" class=" badge badge-pill badge-info" title="Current stage"/>
+                        </div>
+                    </div>
+                </t>
+                <t t-set="card_body">
+                	<div class="content">
+                		<div class="row"> 
+                			<div class="col-lg-8">
+                					<div class="row mb-4">
+				                        <strong class="col-lg-2">Riportato il </strong>
+				                        <span class="col-lg-10" t-field="treatment.create_date" t-options='{"widget": "date"}'/>
+				                    </div>
+				                    <div class="row mb-4">
+				                    	<strong class="col-lg-2">Paziente</strong>
+				                        <span class="col-lg-10" t-field="treatment.patient_id.name" />
+				                    </div>
+				                    <div class="row mb-4">
+				                        <strong class="col-lg-2">Descrizione</strong>
+				                        <div t-if="treatment.description" class="col-lg-10" t-field="treatment.description"/>
+				                        <div t-else="" class="col-lg-10">
+				                            <em class="text-muted"><small>No description</small></em>
+				                        </div>
+				                    </div>
+				                    <div class="row mb-4">
+				                    	<div class="col-lg-6">
+				                    		<p t-field="treatment.image1" t-options="{'widget': 'image','class':'rounded mx-auto d-block'}"/>
+				                    		
+				                    	</div>
+				                    	<div class="col-lg-6 ">
+				                    		<p t-field="treatment.image2" t-options="{'widget': 'image','class':'rounded mx-auto d-block'}"/>
+				                    	</div>
+				                    	
+				                    </div>
+				                    <div class="row mb-4">
+				                    	
+				                        <div t-if="treatment.stl_model" class="col-lg-12 align-middle">
+					                        <span
+					                              class="oe_stl_viewer"
+					                              t-att-data-document-id="treatment.stl_model.id"
+					                        >
+					                        <button class="btn">Mostra modello 3d</button>
+					                                            
+					                          </span>
+				                        </div>
+				                        
+				                    </div>
+				                     
+				                    
+                			</div>
+                			<div class="col-lg-4">
+                				<div class="o_portal_messages_container mt32">
+					                <h4>Messaggi</h4>
+					                <t t-call="portal.message_thread">
+					                    <t t-set="token" t-value="treatment.access_token"/>
+					                    <t t-set="object" t-value="treatment"/>
+					                    <t t-set="pid" t-value="pid"/>
+					                    <t t-set="hash" t-value="hash"/>
+					                    <t t-set="disable_composer" t-value="treatment.stage_id.is_close"/>
+					                </t>
+					            </div>
+                			</div>
+                		</div>
+                    
+                    </div>
+                </t>
+            </t>
+
+            
+        </t>
+    </template>
+	
+	
+	<template id="ifs_dental_product.treatment_submit" name="Submit a Trattamento">
+        <t name="TreatmentSubmit" priority="29" t-name="ifs_dental_product.treatment">
+            <t t-call="website.layout">
+                <t t-set="additional_title">Trattamento</t>
+                
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row">
+                            <section id="forms" class="col-lg-12">
+                            	 <t t-call="ifs_dental_product.treatment_submit_state">
+		                            <t t-set="step" t-value="10"/>
+		                        </t>
+                                <form action="/treatment/patient-data/"  method="post"  enctype="multipart/form-data">
+                                   
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="name">Cognome e Nome</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="text" class="form-control o_website_form_input" name="name" t-value="name" required="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row form-field">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="image">Image</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="file" name="image" id="image" data-target="output" onchange="loadFile(event)" class="form-control inputfile" accept="image/*" />
+                                        		<img onclick="uploadeFile('image');" id="output" class="img-thumbnail" src="data:image/png;base64,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" />
+                                        		  
+                                        		
+                                        </div>
+                                    </div> 
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="date_of_birth">Data di nascita</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                        	<div class="input-group date" id="datetimepicker_1" data-target-input="nearest">
+                                            <input  type="text" date="true" class="form-control datetimepicker-input" name="date_of_birth" t-value="date_of_birth" data-target="#datetimepicker_1" required="1"/>
+                                       		<div class="input-group-append" data-target="#datetimepicker_1" data-toggle="datetimepicker">
+							                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+							                </div>
+                                       		</div>
+                                       		
+                                       		
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row">
+                                        <div class="offset-lg-3 offset-md-4 col-md-8 col-lg-7">
+                                            <button type="submit" class="btn btn-primary btn-lg o_website_form_send o_default_snippet_text">Successivo</button>
+                                            <span id="o_website_form_result"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <template id="select_input">
+            
+            <t t-set="value" t-value="value if value else (treatment.get(name) if treatment else False)"/>
+            
+            <t t-set="options" t-value="select_options.get(name)"/>
+            <t t-set="disabled" t-value="0"/>
+            <div t-attf-class="form-group #{error_field}">
+                
+                <select t-att-name="name" class="form-control" autocomplete="off" t-att-disabled="disabled">
+                	<option t-att-selected="'selected'" disabled="True" value="select"> -- select an option -- </option>
+                    <t t-foreach="options or []" t-as="option">
+                        <option t-att-value="option[0]" t-att-selected="'selected' if option[0] == value else 0">
+                            <t t-esc="option[1]"/>
+                        </option>
+                    </t>
+                </select>
+                <t t-if="disabled == 1">
+                	<t t-foreach="options or []" t-as="option">
+                        <t t-if="option[0] == value">
+                        	<input type="hidden" t-att-name="name" t-att-value="value"/>
+                        </t>
+                    </t>
+                </t>                
+            </div>
+        </template>
+        
+        <template id="many2one_input">
+            <t t-call="ifs_dental_product.select_input">
+                
+                
+            </t>
+        </template>
+        
+    <template id="ifs_dental_product.treatment_data" name="Submit a Treatment">
+        <t name="TreatmentData" priority="29" t-name="ifs_dental_product.treatment_data">
+            <t t-call="website.layout">
+                <t t-set="additional_title">Trattamento</t>
+                
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row">
+                            <section id="forms" class="col-lg-12">
+                            	 <t t-call="ifs_dental_product.treatment_submit_state">
+		                            <t t-set="step" t-value="20"/>
+		                        </t>
+                                <form action="/treatment/treatment-data/" method="post"  enctype="multipart/form-data"  >
+                                   
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="patient_id" t-att-value="patient_id"/>
+                                    <input type="hidden" name="partner_id" t-att-value="request.env.user.partner_id.id"/>
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="name">Prodotto</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <t t-call="ifs_dental_product.many2one_input">
+                                                <t t-set="name" t-value="'product_id'"/>
+                                                
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row form-field o_website_form_required">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="name">Descrizione</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <textarea required="1" name="description"  class="form-control o_website_form_input"><t t-esc="description"/></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                   
+                                    <div class="form-group row">
+                                        <div class="offset-lg-3 offset-md-4 col-md-8 col-lg-7">
+                                            <button type="submit" class="btn btn-primary btn-lg o_website_form_send o_default_snippet_text">Successivo</button>
+                                            <span id="o_website_form_result"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <template id="ifs_dental_product.treatment_photo" name="Submit a Trattamento">
+        <t name="TreatmentData" priority="29" t-name="ifs_dental_product.treatment_data">
+            <t t-call="website.layout">
+                <t t-set="additional_title">Trattamento</t>
+                
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row">
+                            <section id="forms" class="col-lg-12">
+                            	 <t t-call="ifs_dental_product.treatment_submit_state">
+		                            <t t-set="step" t-value="30"/>
+		                        </t>
+                                <form action="/treatment/treatment-photo/" method="post"  enctype="multipart/form-data"  >
+                                   
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="treatment_id" t-att-value="treatment_id"/>
+                                     <div class="form-group row form-field">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="image1">Immagine 1</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="file" name="image1" id="image1" data-target="output1" onchange="loadFile(event)" class="form-control inputfile" accept="image/*" />
+                                        		<img onclick="uploadeFile('image1');" id="output1" class="img-thumbnail" src="https://cdn3.iconfinder.com/data/icons/avatars-set2/32/ava32px061-512.png" />
+                                        		  
+                                        		
+                                        </div>
+                                    </div> 
+                                    <div class="form-group row form-field">
+                                        <div class="col-lg-3 col-md-4 text-right">
+                                            <label class="col-form-label" for="image2">Immagine 2</label>
+                                        </div>
+                                        <div class="col-lg-7 col-md-8">
+                                            <input type="file" name="image2" id="image2" data-target="output2" onchange="loadFile(event)" class="form-control inputfile" accept="image/*" />
+                                        		<img onclick="uploadeFile('image2');" id="output2" class="img-thumbnail" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAAD+CAMAAABWbIqvAAAAkFBMVEX///8AAADz8/P09PT+/v4EBAT19fX9/f38/Pz29vb6+voDAwG3t7fq6upBQUHv7+/h4eHU1NQgICDKysqVlZU/Pz8vLy+5ubmAgIBaWlrBwcEnJyfb29thYWF0dHRISEiqqqqhoaEYGBinp6c2NjZPT09ubm6Dg4OLi4sPDw9HR0dWVlaZmZl4eHgxMTEUFBT2kS7tAAAXPElEQVR4nM2diXLqOgxAnaUhSUkJSylQaKEtFLrc/v/fXWfxIlnOAmHxvDvj6SOJTmJbsi1LjLUtfmXNKOmi/zNbvf4bvR3uHF7uDn+j58f5y379NHRbP9wmiii9sFfWQrJWXuE3rGUl6f/MnZry8bketxKAFkX+LA7LWmzW/DjuVdbK2/VkjQ03qzoCjWWy6KlXe4QA8oIoJmryJmatF0U9opaLEvd/pYT3d/dGzaFqX5u0lQC+9ljx8qJAXCprvl4Lca0XaLXydmEQ+BkDaEh3d5LiTv6JqGU4owkniUlRKgUQPHEQlZcGrriUqPU8N8S10HUFhctvMt4B2UmJq2rPm8SvEIUUwBMCyM94CkUUDn7+4Huv+QJEjZfd2CZKtQC8Y55OweLhC5a9PUVR++jzFtVagFD081MoxnND9mMpePnbCI3SWAAmKkdQiGY5/BZNohOKDGTda0chyvEUqVIR3VDktVG/VgDPE3+TNI0pPEQR7/lzO6YotMnXUOqQGoq4anhrRNF3zkXByy5pQqEskGMpkm9Sw1EUVKnh4f/1rQKomtLiR1JsnFoKKfLh7W1UlLe/hjzZV5knQOsRFF5UUkgDoDGFl1EkW1r2e/AFnr92P4vxeJgOgtjnxUuSQTocL9az7+kfIbvRtvrKkKMo5HApOxJN4Vkoniyyq9poOxkve+WHZ+XDPFHzQ5YM+7t/tq+iesigCYXsIe0ofq3tKK8dXjfjsoNy2V1htEVarXxE2l89V1DwynRZTyG1eDVFCCmSV+u3yBjmfY4QyUZbRcFnFaw3nE2h7KjWr6UQWrwVxfhgo+D/HtZJIXsjirLmj3eq55s8+zCqpmBHUPRtvYF/iN+hkL0NRVbS9w8bheOsRAulKKQWb0Hhs4mVYrRPpOwtKQI+IPqLra1tOV+JlSIUiqMVxa+NYjQRr+wYiqI23soPqyjus9pzaqVo37sZ21ko7vaJnHwcTcGveHqw9JC/JU1RpcVtFL2VhWKXhprsx1L4gcf89YjuIYdhDAf9olahxW0tyrdQfIxZFHRBkdcGM7qHOOWalk7hyseaWtzaLywtahIytzsKXsYfVA9xDkuDwisfRvQQK8ULSfGx1F9KFxR+PPgk+jnvH6mFgtDiVn3xSVJ8hlziwJD9BIrcHF2MTApuaSY0hanFrRQbkuKJnUJRYVQnczzmZuXLjUwKCVNLEeYmrUHxLz0XBa98FtaNTsH1uScfJmqEFrdSDCmKeXw+Ct5D1g6m4P18jynU0jpxE0Qx+EdQzNgZKfgLLWxQ/Ng+opBjlFdLwVYExc+ZKXht+Ux0x6VOEQst7kf1FBOCYnN+Cm73Ts3p/jRQvTsWWtyXWtxOMSYo1p1REI1BddH0w4FjLi8vsXqs0uJVi0B5zf13NYowXk4xRdk9gACyh9gpMu19lRZVmKPpCPdzx0kQBRP7fxUUTybFBFEEZ6PI+vnBEGCFKIQGrKBwnw2Kl0tS5F0T9/O+LoAySewUbGZQbMOLUjAm9KD6KneuMkflhnIVhfkqRoPOKWpWOOMZotBHK6nFqyj8rfFBh5em8KJ4boxWYg4Vm2MUcZO1QbG+OEW2wDfCo9Vr+Vht1me/Ce/fiGJ1VgqyWWRtf2GxrbzyYVyLV7yKCaZ4c69CwfikDXdRX3usX7nwnrzhIWJxJQrmfmBR1poAmhY3KdgeX7q7FkUcL/Bo9Rd5QgBai4u/pQd06WEQXomCP2yGR6uNeNu0FheT3XCPX8CaXZRC7SVllvkAjlZ3zh9ksFAEyTOi+Iq961Ew9o43hJ6K3wkMksIN14jCGccmRXQxCuY/Ivegj/x3hBZ3tWXF+AtRrLQdpCtQ5MpDp8hVOaHFdQqvWAzRu9QwPjuFLoBBEUevkIKb2sqVIbDcBK11Oish3bUo3HgMKRxnYDrBoZsMEIUzPBOF25SCP/YVUsgxl2tx49Ki9g4o7p351Sn8onfoDhnT8mFhbKFgc2RSjs9O4VKiwDUQ/x9yaig9RkMbRYIoHsIboMjaCBxzf4ob+sSleW2DDONNIwqDp2MKJu2j8quMmKbFiWY5R4bx4CYo4t4KUDi8VSnPb/MmA+TvtWtDQcveBYU55r5LDHCT8m9PaL60OIaCNaToNaYIWO8ZjrlbRr0K8YFeHEDx594IBcvtdd1tTtwkMCnC5B+gyBbYztai2lEUK05qtMrbCb9JFJiXBinqSE/dUFDejy0pWPgMx9xJ/ghdi6uO1Affgo9TYc384miK5r1bCLBygOZ4zK+IfeJSPGGcy4WU61P0+lBzOPklBIXHwi0cDvbh8RTVvs2tKeJoiBp8ZrJS38IvrFttOFgoG/3aFPxhU6g51kwUfGmKBrX0lijy/VRNvE8bReaHp5vD2/CWKAqXcvWSH20UbA99m39vigJpjqKPk5fu4ND8cx4Kc5bUiIIlB108x8n/GgbGpXygAkPz8KoU5iA51cS7L8RTWlxdmq/PacNB0h0F4S3YmoJtoXiLXIsbl4Yp/Nnb4KYoovAFiOesNS2uXRos4c8e4poVzvYUXmMKgydye+9Q/02UFgdTkyH82eqKFMykiMrVQzlalQMpwwPDE/zZC7ulbxEVPizamCuWniCFny9RaT/7DU+gsB2dOIEiX5bV9N8XTZH7HWk/2/fATU6noPp5C4rMVtJNpSlNke2V6Wry58YooP4rFnkY8KIVtgiYJr6fTGG6DZxCwQZ/jq7F3/KbmFr8E9oi6xujYAO5QZzLecgeFpn6bwZtkf6NUcTSyigazR3TYiFo7km/DvhZ/7YoIs8bAcV2R2vxcAYonP4Rq81NKfDKfwMKN45HQLHdkVrci1dQi/dvjIIFb0CxHZgowBZJIIXTD2+LIhupdJUg9seRGTOBFM4iui0KltwB/fdMUsRTSOEsDdnPSsFwzWjSS6jF/5E3WSCK7Y19i9ym0rX4F/kqVg60RdadUngnf4tiTUHTf7mFW8RrUZcmiGI0aElhd1zsiKKcSAiKfL4R4jO4E7TwPrs5inAD1TOf/fU0LZ5fEE8hhbNsQNHg6ASmILzlG1JEWD2vmfJ/EZcu0Mbz9uYoXDaHiu1J1+LlBSu08by+OYqYfZTilUcihEuudmniQOs27+AXoWjuZua9AQqHiBMwgRR5B78xisJDSlNsJoUnAhuIny1vjwL5vxSTP3Bp+IQotjdIUSwVqCPxK3xpHGFXhr4m+61QsFdwgFms98ugZ+Y+8mgQt/0WVm/5ziiikaNTFP6fYaQGut4EUjgzv+23OD9FbhhKivtioFJBz/hNCn8MrfsMo5v7FrmLlE5RbCiH2k3QEq+zDW6Pwtd3NzKKvIfrFHiL01n7xk2uThElI0BR+qtpN0kQxSgxbnJ1iiBaQApnqLzbipvAFWhpop9E4XZM4YpFNDnmKu+24lJ/hDZql1UUIa5dhiLuTSHFXPaL8tIFmi9tG1BY4qoR/rQdUZQu50r/vfs9eJMVmmn0b5Gi8C3Sgo9IP5BSiyf6csOdmIPfGkX8DCnEGpXU4hM0X5odR0F6aHdGUVq3yi6clAJILf6GZhrDW6TIVBuwC8thSGrxBaLY3iRFcgcpRuUPxe5kKEN36rsBzShqfP47pGAbBwYZKtuUKDHyr8g6+A1S+B8ODJWUjVNixOUXxBNIwTv4BShaHzpYONC6zTzCfKXFvfgAKZxh3A1FlX9Ua3d99o1s9HU2RiktHi4QxWvo3SCF8PmUo1WsBSDPGugKUjjr+PYofP8FUfxyUfQA5ANEMUpaU5h+g51QaNu9kTyComx0GIB8Aimka8+1KAKCIpBHdAXFB1Oi5K0HUYizcTXzi4tSeEEyghS85QsBCi2Oj6G9EhRNv4WUuGMKl20QhaPOtRdafI5mGn2Toum3aERxjLt+GD0jir0caosyQBQj9/Yo4sJXDcw0yhsLLT5B86XZrVFktWiKKF7KC2QAcjRfKk4S1KweXJpCOA7KhB5i2ie1+AJRfJ2FonovqZYiQgGMxTq6Cl06RzON/pEUJ+yx1lLkHwPMNAqdoEKXJpq5lVHwDn57FMEzovhGj2XCRBf9fHZ7LSoPPQ8oim1LLY0IQxR8dhuY1u1pM9aTKbJQQGC+tIWPVcavoHjNZh/lTeS2QC0FNTJ1R8Hw3DX/GDoFQ27rzvPXw1dZHrazhY8pmnoLdkmRfQxAscUU5cquNTfDx/D6FNnHgLO+sS5AHrr0G1KY0Y0Xyhxu7rnZKUUWBA8I9a0vThZafFtDwft8dDYKYlZBzF1/EAX/GNoSa6HFd3UUxYn3K1IkmstBLtR31rjVrM8vUKsp7pxDRUT581P0dO8pMXfVw9MVDxs71RS8NkQURLTm81FEgw8k1JzpL1QsUglWK0W+f26h6MCzqJrCE2e+Nb+jmGgWbFJHkdmKV6Pw4lck1DwyKVjYCw81FByjjuJ4v8E6CjbGQo1jkyKbiw9rKHijuhpFKBcChVDfZsyg8pn9agqnT+Uo6ISi3qE3RUKVESAMLZ6VRVVGlWw96GoURUhCFYDc2ZqH1FRuz1TlrzR47p21eAGXpwj+oTDqC4NCS5LAP97me3pHUohlq2tQwB1LLspjiCmMAORuOhwus5Lu9EsFxtko6HQJnjKVNFHWWAAzjQiTWUs/He3S+wLjKhSDA6R4c7EA8rFmGpEsrrLetvrnpKg8dPAEKYroD5SjOxWiP9ROmpla/IIUWTAEEAwephFRAqg0ItoaiObKrrT4Fb5FFkUAUHzbKGQaEY3CU6FrTC3eiR3VkEIYIlKUNU0hYQBFWGDc61q8U2uwqUOvEQE2ISlUGhFIkWPcV2rxS1AE0RxSrOjeLbU4oigDclVo8UtQyF0yGbnlnRECkGlEimY5q9HiF6Hw/BRSOGlUpS8io3PNqrV49a5FVxQhzsj3kZgRUfQA5MZNZnC4Rlr8UhS5dat10V1Y1RjMNCJKi9/Lg9YXpSibxQuwbqXTEUVBpRGRWlxlibhovygpet/QRlexUw0ByADkQovfE1r8chQs+FBrT/dcEpwCRaMgA5DjAHRP1EB3doosYsKd1izuRNRRQwBlksDONQMUmha/JAUrj60LUaauRQBrGpEZoOBa/BoUfgoonMfIQmFNIzKD4ZXN/EJd+A3WuetHKaBwvmJaAHuqo08YmLh/DQovSgAFxzDjujAqjYicG+31IUJEfTkbheXQgZ/AgebBDQgB5D6lTCOiZngoecj+GhRh0cV1W8SM6yIfq9KIKAq2gZ3LSNNkULT2RKUpYLMY3IGB5lll0zUFkAHI9TxiKGOHrXOdkSITyh2BgeZOZjY2BdC0uNa5Uti5nITsXF1QVB2diIAWNxOZaRSkFvddlPVwTWWmOzeFHl0xFyW1CUBp8Wy23fuG+m9FBOo5G4XatZDe/4UoY4sAVBqR4iafUP85Fc3ybBShDF9YirKxUEgtbvg2L1BI+/2ZKUjnarEwIkT5pIf62H4THAy+DJd5UQqvTCwnX+iOzO9TlUbER82yDEB+UYoezk0L9J+gUN5GRBoRPdNsUVlQr+K8FLka1/OYqBjJhvFApxGJBgdI4fylbRPT2PxpG1PgvI/C5Zwygeg0Ij6eOd07jz18k84pDMfFFTRRRXRhk0IPQA48KFJIIZ0UL0mhRfSjsk5oFGQakfxvO5SxSqbAvByF8LwTL3Qa0BRSixM+OSkec7mNmbJLUsTREgmQ0v1CrvIQnkUquKGe0038z0tQ8IHGWIumFvhs/SL/n4FIWajndMtdDy9FwUVBURFWsbl8EZsuJMA/Cgf3LWsPT5mTU8f6wuZcDTNpCwc1MNnUtLjFy2tHUGRl9y4SavXEcK2iVfJaWaGSobQ8UjSEqfHU+qfx8sg0IoXGjqYkRVGmjw8PD9m/vDwate/JkNoebXcwKls4NE6WUBN/Oo1IaXcsHceksLrsGmXu2ikauuujlCHTiKawpBERDQQHSGpVu3fekhMp2AYJMKQpyDQiygb016dQOFkGsZOOTkQoojtvVSSFJY2IqJXJpI+lyHayaw4dVB8AiYq0LOrGb4PApNC1OEWR1fo4j2YbCmcrjx8ceYwFnw/ti7W0iNTiNgrGxgd03KYFBW/MxjZQ3QEQKMoS3lgcadIo4up+Ift5+nA0hQxefiwFC1/BjcXqRkRq8QqK7Pj7/lgKETqmadIHwp0Gxw2ZQIpIrt2aAciNxd7hY/kuWlKU0Q6aHwAxRZGbNeUjRhFpAnEtXkvBy3qEbteQIltdOoUijr7RI8jI1VQAcmpHjCU/z8dQ8FalVpvrDh1QzSLso0e8Rl6FFq/b14tZ+FQO4m0oMk+PUyiiMsOMNuYu1JgrrVAqjYh9dzJ938q4+NVF8fzEJgV5dMLmLAcT/IlFAUAhStM91l4vGW92D9O3GvNQ0xzbaop6l78l/txi6iYopBZvu1McJkNZxmNYW+5A2xKrZCccOpijQXIOKaQWb7/fLbfaQK2QaYx6yOZECm5nIzNirFPE7fpF43l39AfdeLcnUsSDR0jB76hRKC3eKYUfIzfeLJXrSQdAcIIjx3mSUbU0Ld4tRRDjyIObU4+xuCipqjP1hCjCgA6JNCKnnYUJozc4Wm1PPozzA8dckQq5ToufQhGXK3XamLsUpvSxztWBsbiRQFFILX4iRe7NrPul/UgKQ4s3okjWU2yYrlitFj+VIg+8qztdbv1jKfjtBk9F0gM0Wi3rtPjJFFmrMq31Iygi313s3hzSfNuH8rGkFu+AgomxSrPW21OwZPyL4wyr2lx6IJFa/HgKtZJjxKzdtqcIh7MPQ3ZtzH2VY9Tx/aJmtdkzor2mxAnQKop0IhYALBMCcfzbjygPwm4owuLkhebRPAkNzWE3gdLN1nGqKYTm8ANNixuyn0rBghH0aN42owhCPrjOHWpkQhSF4vAD5ZpoZoM5mSLXgLrmUNZ6BUUvTJ9WB7vs+pxjAgUw0ojUUdQFVC9fzxhqjkIDVlNwBTGqkl3/FqseEMBMI3IihZh3u+h0VaYBq9z14+ELztJgqWW33YeQAgYg744ijJEXUWGtWyj84acYXGspHOdxn0IBVOmawhPWulzG3tCO7vzS5eSx7EANKKazYYwF0LR4xxRer0hmpxbjt655FiaMe+nmq0lvKGqj34XYxNQE0LT4KRQW/9NfB2gOEUdYo2DL9bbJFyhru4UbmidfdS1+BopMAwL/mx9EMXj6PtTL7pTLe6v+gB7qNS1+DooippSkENZ6SREsVk0XhXn5foezJN0cFVpcSyPSJUVurWsUhQbMR6ZwnA+uzfq08/WTYFE0ATQtTsjeAYWy1su29cPyRa3hZxmhsAnFx35oikIdpFVLJd1ShIEIASR6yDZTcpMP8LdKiufPoavFHq6a4ITqZ91SSGtdSbzY4HUzu7XhHH7HsfKIrKHA6RI6pOhJa93BpbZP88E10gWoo2DyZ91T5KtkYMxtSLHqe1CAagqlxTuhMFNv/yJ3RVyjKLYbIwdLDQVKI9I5hR77qhnF4yYVJktjirhRv7DMkggK4+QCG0jbuwnF8yTNVoBbUhBavBsKu8+/jYL/O+yHSJRGFDAAuZ2CXslpRuHG4ya9gZfZuNVrJMJH0Fq8EwqvXNGvodj1fbsANRRSAFKLt6Ww+pm/1FGs1gOqi1Y3aUMUWot3RoGtdUTx+h6EcfuOaXwLxtTwdg4KYK0ja+NfpiA6OfaoypkoslZlfgte3iYpfmzbhWIpgJZGRLlhKGNMBffVaoauI7ReFiNEHMvB1npePsVJDML7o04AY6ahzcVl/F6i5svNTqrWk0GtVE0tRPK581xvSFl5WYi3V/nYxgJILR6r1IXa38QFdK2Ha2r5UdVCfmNXTVazgYkzKEdq9dhTBBAPk6OVXhM/q67JZQlV66laviTpvgqGbebvSD7seAFUBB5p6Dat9aRlXFnzRW28Gzl/83Wg/+2Ix+o1+LD/0e4iZNpHyVIAAAAASUVORK5CYII=" />
+                                        		  
+                                        		
+                                        </div>
+                                    </div> 
+                                    
+                                    
+                                   
+                                    <div class="form-group row">
+                                        <div class="offset-lg-3 offset-md-4 col-md-8 col-lg-7">
+                                            <button type="submit" class="btn btn-primary btn-lg o_website_form_send o_default_snippet_text">Successivo</button>
+                                            <span id="o_website_form_result"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <template id="treatment_submit_state" name="Trattamento states">
+            <h3 class="page-title margin-top-clear">Trattamento</h3>
+            <nav aria-label="breadcrumb">
+            	 <ol class="breadcrumb">
+                <li t-att-class="(step==10 and 'text-primary' or 'text-muted') + ' breadcrumb-item'"  id="step10" >
+                       	Dati paziente
+                </li>
+                <li t-att-class="(step==20 and 'text-primary' or 'text-muted') + ' breadcrumb-item'"  id="step20" >
+                        Dati Trattamento
+                </li>
+                <li t-att-class="(step==30 and 'text-primary' or 'text-muted') + ' breadcrumb-item'" id="step40" >
+                    	Foto
+                </li>
+                
+            </ol>
+            </nav>
+        </template>
+    
+   
+    
+    
+	
+	
+	
+</data>
+	
+</odoo>

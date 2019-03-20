@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ifs_dental_product_patient,ifs_dental_product.patient,model_ifs_dental_product_patient,,1,1,1,1
+access_ifs_dental_product_treatment,ifs_dental_product.treatment,model_ifs_dental_product_treatment,,1,1,1,1
+access_ifs_dental_product_stage,ifs_dental_product.stage,model_ifs_dental_product_stage,,1,1,1,1
+access_ifs_dental_product_tag,ifs_dental_product.tag,model_ifs_dental_product_tag,,1,1,1,1

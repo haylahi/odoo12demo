@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="StlViewer">
+    	
+        <div class="o_stl_viewer">
+        	
+           <div id="stl_content" style="width:100%">
+           	<button  class="btn o_field_show" type="button">
+                <span>Show</span>
+         </button>
+           </div>
+        </div>
+    </t>
+</templates>
