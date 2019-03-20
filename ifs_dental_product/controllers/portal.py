@@ -125,7 +125,7 @@ class CustomerPortal(WebsiteForm,CustomerPortal):
         # TODO: How to get the name of the erroneous field ?
         except IntegrityError:
             return json.dumps(False)
-        products = [(product_id.id,product_id.display_name) for product_id in request.env['product.product'].search([(True,'=',True)])]
+        products = [(product_id.id,product_id.display_name + " (" +str(product_id.list_price)+ " € )" ) for product_id in request.env['product.product'].search([(True,'=',True)])]
         select_options = {
             'product_id': products
         }

@@ -6,49 +6,46 @@
          <field name="model">ifs_dental_product.treatment</field>
          <field name="arch" type="xml">
          		<form>
+         			<header>
+         			<button name="create_order" attrs="{'invisible':[('order_id','!=',False)]}" string="Create Order" type="object" class="oe_highlight" />
+         			
+                    <button name="assign_ticket_to_self" string="Assign To Me" type="object" class="oe_highlight" />
+                    <field name="stage_id" widget="statusbar"
+                        options="{'clickable': '1', 'fold_field': 'fold'}"/>
+                	</header>
+                	<field name="order_id" invisible="1"/>
          			<sheet>
          				<h1>
          					<field name="name"/>
          				</h1>
          				<group>
+         					<field name="partner_id"></field>
+         					<field name="product_id"></field>
          					<field name="patient_id"></field>
-         					<field name="stage_id"></field>
-         					<field name="description"></field>
-         					<field name="ref"></field>
+         					
+         					<field name="user_id"></field>
          				</group>
-         				<div class="row">
-         				 	   <div class="col-4" >
-         				 	   	
-         				 	   </div>
-                               <div class="col-4" style="text-align:center">
-         				 	   <field name="image1" widget="image"/>
-         				 	   </div>
-         						<div class="col-4" >
-         				 	   	
-         				 	   </div>
-         				 </div>
-         				 <div class="row">
-         				 	   <div class="col-4" style="text-align:center">
-         				 	   		<field name="image2" widget="image"/>
-         				 	   </div>
-                               <div class="col-4" style="text-align:center">
-	         						<field name="stl_model" />
-         						</div>
-         						<div class="col-4" style="text-align:center">
-         				 	   		<field name="image3" widget="image"/>
-         				 	   </div>
-         				 </div>
-         				 <div class="row">
-         				 	   <div class="col-4">
-         				 	   	
-         				 	   </div>
-                               <div class="col-4" style="text-align:center">
-         				 	   <field name="image4" widget="image"/>
-         				 	   </div>
-         						<div class="col-4">
-         				 	   	
-         				 	   </div>
-         				 </div>
+         				<field name="description"></field>
+         				<notebook>
+         					<page string="Foto">
+	         					<div class="row">
+	         				 	   <div class="col-6" >
+	         				 	   	<field name="image1" widget="image"/>
+	         				 	   </div>
+	                               <div class="col-6" >
+	         				 	   <field name="image2" widget="image"/>
+	         				 	   </div>
+	         						
+	         				 </div>
+		         				
+         					</page>
+         					<page string="Modello STL">
+         						<group>
+         							<field name="stl_model" />
+         						</group>
+         					</page>
+         				</notebook>
+         				
          			</sheet>
          			<div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
@@ -58,7 +55,71 @@
          </field>
     </record>
     
+    <record id="treatment_view_kanban" model="ir.ui.view">
+        <field name="name">treatment kanban</field>
+         <field name="model">ifs_dental_product.treatment</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column" >
+                <field name="stage_id"/>
+                <field name="user_id"/>
+                <field name="color"/>
+                <field name="priority"/>
+                <field name="id"/>
+                <field name="tag_ids"/>
     
+                <field name="deadline"/>
+                <field name="activity_ids"/>
+                <field name="activity_state"/>
+                <field name="partner_id"/>
+                <progressbar field="activity_state" colors='{"planned": "success", "today": "warning", "overdue": "danger"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{kanban_color(record.color.raw_value)} oe_kanban_global_click">
+                            <span class="oe_kanban_color_help" t-attf-title="In #{kanban_getcolorname(record.color.raw_value)}" role="img" t-attf-aria-label="In #{kanban_getcolorname(record.color.raw_value)}"/>
+                            <div class="o_dropdown_kanban dropdown">
+                                <a class="dropdown-toggle o-no-caret btn" role="button" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                    <span class="fa fa-bars fa-lg"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <a name="%(portal.portal_share_action)d" type="action" class="dropdown-item" role="menuitem">Share</a>
+                                    <t t-if="widget.editable"><a type="edit" class="dropdown-item" role="menuitem">Edit</a></t>
+                                    <t t-if="widget.deletable"><a type="delete" class="dropdown-item" role="menuitem">Delete</a></t>
+                                    <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_content">
+                                <div>
+                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                </div>
+                                <div>
+                                    <strong><field name="name"/> (#<field name="id"/>)</strong>
+                                </div>
+                                <div>
+                                    <field name="partner_id"/>
+                                </div>
+                                <div t-if="record.deadline &amp;&amp; record.deadline.raw_value"> <!-- here  -->
+                                <t t-if="new Date(record.deadline.raw_value) &lt; (new Date())" t-set="red">oe_kanban_text_red</t>
+                                    <span class="fa fa-clock-o" title="Deadline" role="img" aria-label="Deadline"/> <span t-attf-class="#{red}"><i><field name="deadline"/></i></span>
+                                </div>
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="priority" widget="priority"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    
+                                    <img t-att-src="kanban_image('res.users', 'image_small', record.user_id.raw_value)" t-att-title="record.user_id.value" t-att-alt="record.user_id.value" width="24" height="24" class="oe_kanban_avatar float-right"/>
+                                    <div class="float-right">
+                                        <field name="activity_ids" widget="kanban_activity"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="oe_clear"></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
     
     <record model="ir.ui.view" id="treatment_tree_view">
          <field name="name">treatment tree</field>
@@ -71,23 +132,44 @@
     		
          </field>
     </record>
-    
+    <record model="ir.ui.view" id="treatment_stage_tree_view">
+         <field name="name">treatment stage tree</field>
+         <field name="model">ifs_dental_product.stage</field>
+         
+         <field name="arch" type="xml">
+         	<tree editable="bottom">
+	         	<field name="name"/>
+         	</tree>
+    		
+         </field>
+    </record>
    		<record model="ir.actions.act_window"
 			id="treatment_action">
-			<field name="name">Treatments</field>
+			<field name="name">Trattamenti</field>
 			<field name="res_model">ifs_dental_product.treatment</field>
 			<field name="view_type">form</field>
-			<field name="view_mode">tree,form</field>
+			<field name="view_mode">kanban,tree,form</field>
 		</record>
-		
+	<record model="ir.actions.act_window"
+			id="stage_action">
+			<field name="name">Stage</field>
+			<field name="res_model">ifs_dental_product.stage</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree</field>
+		</record>	
 	<record model="ir.ui.view" id="patient_form_view">
          <field name="name">patient form</field>
          <field name="model">ifs_dental_product.patient</field>
          
          <field name="arch" type="xml">
          	<form>
-	         	<field name="name"/>
-	         	<field name="date_of_birth"/>
+         		<sheet>
+         			<field name="image" widget="image"/>
+         			<group>
+	         		<field name="name"/>
+	         		<field name="date_of_birth"/>
+	         		</group>
+	         	</sheet>
          	</form>
     		
          </field>
@@ -106,7 +188,7 @@
     
     <record model="ir.actions.act_window"
 			id="patient_action">
-			<field name="name">Patients</field>
+			<field name="name">Pazienti</field>
 			<field name="res_model">ifs_dental_product.patient</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
@@ -116,14 +198,19 @@
         
 		<menuitem name="Wilocs"
 			id="ifs_dental_product.menu_root"
-			web_icon="ifs_dental_product,static/description/logo.png" />
+			web_icon="ifs_dental_product,static/description/wilocs.png" />
 			
-		<menuitem name="Treatments"
+		<menuitem name="Trattamenti"
 			id="ifs_dental_product.menu_treatment"
 			parent="ifs_dental_product.menu_root"
 			action="ifs_dental_product.treatment_action" sequence="4" />
 			
-		<menuitem name="Patients"
+		<menuitem name="Stage"
+			id="ifs_dental_product.menu_treatment_stage"
+			parent="ifs_dental_product.menu_root"
+			action="ifs_dental_product.stage_action" sequence="5" />
+			
+		<menuitem name="Pazienti"
 			id="ifs_dental_product.menu_patients"
 			parent="ifs_dental_product.menu_root"
 			action="ifs_dental_product.patient_action" sequence="5" />
